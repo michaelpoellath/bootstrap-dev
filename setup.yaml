@@ -3,7 +3,8 @@
     - user: 'micha'
 
   tasks:
-    - name: "Setup system packages"
+#----- Brew Packages -----
+    - name: "Install useful tools"
       community.general.homebrew:
         #https://zaiste.net/posts/shell-commands-rust/
         name:
@@ -21,7 +22,26 @@
           - zoxide
           - openssl
           - cmake
+
+          - git
+          - findutils
+
+          - neovim
+
+          - kubectl
+          - k9s
         state: latest
+        update_homebrew: yes
+
+# ----- Languages -----
+
+# ----- Shell -----
+
+    - name: "Create Nushell config dir"
+      ansible.builtin.file:
+        path: ~/Library/Application\ Support/org.nushell.nu
+        state: directory
+        mode: '0755'
 
     - name: "Setup shell"
       community.general.homebrew:
@@ -33,14 +53,102 @@
 
     - name: "Copy nushell config"
       copy:
-        src: ./config.toml
+        src: ./.nushell/config.toml
         dest: "/Users/{{ user }}/Library/Application Support/org.nushell.nu/config.toml"
         owner: "{{ user }}"
         mode: '0644'
 
-    - name: "Copy hyper config"
+
+# ----- Terminal -----
+# ----- Hyper -----
+    # - name: "Copy hyper config"
+    #   copy:
+    #     src: ./.hyper/.hyper.js
+    #     dest: "/Users/{{ user }}/.hyper.js"
+    #     owner: "{{ user }}"
+    #     mode: '0644'
+
+# ----- Alacritty -----
+    - name: "Setup Alacritty"
+      community.general.homebrew:
+        #https://zaiste.net/posts/shell-commands-rust/
+        name:
+          - alacritty
+        state: latest
+
+    - name: "Copy alacritty config"
       copy:
-        src: ./.hyper.js
-        dest: "/Users/{{ user }}/.hyper.js"
+        src: ./.alacritty/.alacritty.yml
+        dest: "/Users/{{ user }}/.alacritty.yml"
         owner: "{{ user }}"
         mode: '0644'
+
+# ----- Multiplexer -----
+
+    - name: "Create Zellij config dir"
+      ansible.builtin.file:
+        path: ~/.config/zellij
+        state: directory
+        mode: '0755'
+
+    - name: "Copy zellij config"
+      copy:
+        src: ./.zellij/config.yaml
+        dest: "/Users/{{ user }}/.config/zellij/config.yml"
+        owner: "{{ user }}"
+        mode: '0644'
+
+# ----- Emacs -----
+    - name: "Brew tap EmacsMacPort"
+      community.general.homebrew_tap:
+        name: railwaycat/emacsmacport
+
+    - name: "Install emacs"
+      community.general.homebrew:
+        #https://zaiste.net/posts/shell-commands-rust/
+        name:
+          - emacs-mac
+        install_options: with-modules
+
+    - name: "Link Emacs App"
+      ansible.builtin.file:
+        src: /usr/local/opt/emacs-mac/Emacs.app
+        dest: /Applications/Emacs.app
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        state: link
+
+    - name: "Download Doom Emacs"
+      ansible.builtin.git:
+        repo: https://github.com/hlissner/doom-emacs
+        dest: ~/.emacs.d
+        single_branch: yes
+        version: develop
+
+    - name: "Create Doom config dir"
+      ansible.builtin.file:
+        path: ~/.config/doom
+        state: directory
+        mode: '0755'
+
+   - name: "Create dir for org-mode"
+      ansible.builtin.file:
+        path: ~/.org
+        state: directory
+        mode: '0755'
+
+   - name: "Create dir for code"
+      ansible.builtin.file:
+        path: ~/projects
+        state: directory
+        mode: '0755'
+
+    - name: "copy doom config"
+      copy:
+        src: ./.doom/*
+        dest: ~/.config/doom/
+        owner: "{{ user }}"
+        mode: '0644'
+
+    - name: "Install Doom"
+      ansible.builtin.shell: ~/.emacs.d/bin/doom install

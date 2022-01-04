@@ -1,6 +1,7 @@
 startup = [
  "pathvar add /opt/homebrew/bin",
  "alias ll = ls -l",
+ "alias vim = nvim",
  "alias cat = bat",
  "let-env GOPATH = $nu.env.HOME/go",
  "mkdir ~/.cache/starship",
