@@ -1,0 +1,46 @@
+- hosts: localhost
+  vars:
+    - user: 'micha'
+
+  tasks:
+    - name: "Setup system packages"
+      community.general.homebrew:
+        #https://zaiste.net/posts/shell-commands-rust/
+        name:
+          - exa
+          - bat
+          - fd
+          - procs
+          - sd
+          - dust
+          - ripgrep
+          - tokei
+          - hyperfine
+          - bandwhich
+          - grex
+          - zoxide
+          - openssl
+          - cmake
+        state: latest
+
+    - name: "Setup shell"
+      community.general.homebrew:
+        #https://zaiste.net/posts/shell-commands-rust/
+        name:
+          - nushell
+          - starship
+        state: latest
+
+    - name: "Copy nushell config"
+      copy:
+        src: ./config.toml
+        dest: "/Users/{{ user }}/Library/Application Support/org.nushell.nu/config.toml"
+        owner: "{{ user }}"
+        mode: '0644'
+
+    - name: "Copy hyper config"
+      copy:
+        src: ./.hyper.js
+        dest: "/Users/{{ user }}/.hyper.js"
+        owner: "{{ user }}"
+        mode: '0644'

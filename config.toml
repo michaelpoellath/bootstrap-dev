@@ -1,0 +1,15 @@
+startup = [
+ "pathvar add /opt/homebrew/bin",
+ "alias ll = ls -l",
+ "alias cat = bat",
+ "let-env GOPATH = $nu.env.HOME/go",
+ "mkdir ~/.cache/starship",
+ "starship init nu | save ~/.cache/starship/init.nu",
+ "source ~/.cache/starship/init.nu",
+ "zoxide init nushell --hook prompt | save ~/.zoxide.nu",
+ "source ~/.zoxide.nu"
+]
+
+prompt = "starship_prompt"
+
+
