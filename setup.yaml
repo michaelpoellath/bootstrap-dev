@@ -39,6 +39,9 @@
           - fontconfig
           - neovim
           - gnu-tar
+          - gnupg
+          - gpg2
+          - pinentry-mac
           - azure-cli
 
           - kubectl
