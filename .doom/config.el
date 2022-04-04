@@ -20,9 +20,9 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
-(setq doom-font (font-spec :family "Iosevka SS04" :size 18 :weight: "regular")
-      doom-variable-pitch-font (font-spec :family "hack" :size 15)
-      doom-big-font (font-spec :family "hack" :size 20))
+(setq doom-font (font-spec :family "Iosevka" :size 18 :weight: "regular")
+      doom-variable-pitch-font (font-spec :family "Iosevka" :size 15)
+      doom-big-font (font-spec :family "Iosevka" :size 20))
 
 
 (custom-set-faces!
@@ -42,7 +42,7 @@
 ;; `load-theme' function. This is the default:
 ;;(setq doom-theme 'doom-vibrant)
 ;;(setq doom-theme 'doom-nord)
-(setq doom-theme 'doom-nord)
+(setq doom-theme 'doom-one)
 ;;(setq doom-theme 'doom-vibrant)
 ;;(setq doom-theme 'doom-spacegrey)
 

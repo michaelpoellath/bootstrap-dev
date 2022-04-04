@@ -1,10 +1,20 @@
 - hosts: localhost
+  gather_facts: true
+  become: true
+  become_user: "{{ lookup('env', 'USER')  }}"
+
   vars:
-    - user: 'micha'
+    user: "{{ ansible_user_id  }}"
 
   tasks:
+    - name: create dir for user installed binaries
+      ansible.builtin.file:
+        path: ~/.opt
+        state: directory
+        mode: '0755'
+
 #----- Brew Packages -----
-    - name: "Install useful tools"
+    - name: install useful tools
       community.general.homebrew:
         #https://zaiste.net/posts/shell-commands-rust/
         name:
@@ -25,38 +35,47 @@
 
           - git
           - findutils
-
+          - coreutils
+          - fontconfig
           - neovim
+          - gnu-tar
 
           - kubectl
           - k9s
+          - podman
+          - kind
+
+          - pyenv
+          - pyenv-virtualenv
         state: latest
         update_homebrew: yes
+      tags:
+        - tools
+        - never
 
-# ----- Languages -----
+#----- Cargo  -----
+    - name: check if cargo is installed
+      shell: command -v cargo
+      register: cargo_exists
+      ignore_errors: yes
 
-# ----- Shell -----
-
-    - name: "Create Nushell config dir"
-      ansible.builtin.file:
-        path: ~/Library/Application\ Support/org.nushell.nu
-        state: directory
+    - name: Download Installer
+      when: cargo_exists is failed
+      get_url:
+        url: https://sh.rustup.rs
+        dest: /tmp/sh.rustup.rs
         mode: '0755'
+        force: 'yes'
+      tags:
+        - rust
+      when: zellij_exists is failed
 
-    - name: "Setup shell"
-      community.general.homebrew:
-        #https://zaiste.net/posts/shell-commands-rust/
-        name:
-          - nushell
-          - starship
-        state: latest
+    - name: install rust/cargo
+      when: cargo_exists is failed
+      shell: /tmp/sh.rustup.rs -y
+      tags:
+        - rust
 
-    - name: "Copy nushell config"
-      copy:
-        src: ./.nushell/config.toml
-        dest: "/Users/{{ user }}/Library/Application Support/org.nushell.nu/config.toml"
-        owner: "{{ user }}"
-        mode: '0644'
 
 
 # ----- Terminal -----
@@ -69,86 +88,122 @@
     #     mode: '0644'
 
 # ----- Alacritty -----
-    - name: "Setup Alacritty"
-      community.general.homebrew:
-        #https://zaiste.net/posts/shell-commands-rust/
-        name:
-          - alacritty
-        state: latest
+# - name: "Setup Alacritty"
+#     community.general.homebrew:
+#       #https://zaiste.net/posts/shell-commands-rust/
+#       name:
+#         - alacritty
+#       state: latest
 
-    - name: "Copy alacritty config"
-      copy:
-        src: ./.alacritty/.alacritty.yml
-        dest: "/Users/{{ user }}/.alacritty.yml"
-        owner: "{{ user }}"
-        mode: '0644'
+          #   - name: "Copy alacritty config"
+          #copy:
+          #src: ~/.alacritty/.alacritty.yml
+          # dest: "/Users/{{ user }}/.alacritty.yml"
+          # owner: "{{ user }}"
+          #mode: '0644'
 
 # ----- Multiplexer -----
 
+    - name: check if zellij installed
+      shell: zellij --help
+      register: zellij_exists
+      ignore_errors: yes
+      tags:
+        - zellij
+
+    - name: get zellij bin url
+      when: zellij_exists is failed
+      register: json_response
+      uri:
+        url: https://api.github.com/repos/zellij-org/zellij/releases/latest
+        return_content: true
+      tags:
+        - zellij
+    - name: download zellij dmg
+      when: zellij_exists is failed
+      get_url:
+        url: "https://github.com/zellij-org/zellij/releases/download/{{json_response.json.tag_name}}/zellij-aarch64-apple-darwin.tar.gz"
+        dest: /tmp/zellij.tar.gz
+      tags:
+        - zellij
+    - name: untar zellij
+      when: zellij_exists is failed
+      ansible.builtin.unarchive:
+        src: /tmp/zellij.tar.gz
+        dest: ~/.opt
+      tags:
+        - zellij
+
     - name: "Create Zellij config dir"
+      when: zellij_exists is failed
       ansible.builtin.file:
         path: ~/.config/zellij
         state: directory
         mode: '0755'
+      tags:
+        - zellij
 
     - name: "Copy zellij config"
+      when: zellij_exists is failed
       copy:
-        src: ./.zellij/config.yaml
-        dest: "/Users/{{ user }}/.config/zellij/config.yml"
+        src: .zellij/config.yaml
+        dest: "/Users/{{ user }}/.config/zellij/config.yaml"
         owner: "{{ user }}"
         mode: '0644'
+      tags:
+        - zellij
 
-# ----- Emacs -----
-    - name: "Brew tap EmacsMacPort"
-      community.general.homebrew_tap:
-        name: railwaycat/emacsmacport
+# # ----- Emacs -----
+#     - name: "Brew tap EmacsMacPort"
+#       community.general.homebrew_tap:
+#         name: railwaycat/emacsmacport
 
-    - name: "Install emacs"
-      community.general.homebrew:
-        #https://zaiste.net/posts/shell-commands-rust/
-        name:
-          - emacs-mac
-        install_options: with-modules
+#     - name: "Install emacs"
+#       community.general.homebrew:
+#         #https://zaiste.net/posts/shell-commands-rust/
+#         name:
+#           - emacs-mac
+#         install_options: with-modules
 
-    - name: "Link Emacs App"
-      ansible.builtin.file:
-        src: /usr/local/opt/emacs-mac/Emacs.app
-        dest: /Applications/Emacs.app
-        owner: "{{ user }}"
-        group: "{{ user }}"
-        state: link
+#           #    - name: "Link Emacs App"
+#           #ansible.builtin.file:
+#           # src: /usr/local/opt/emacs-mac/Emacs.app
+#           #dest: /Applications/Emacs.app
+#           # owner: "{{ user }}"
+#           #group: "{{ user }}"
+#           #state: link
 
-    - name: "Download Doom Emacs"
-      ansible.builtin.git:
-        repo: https://github.com/hlissner/doom-emacs
-        dest: ~/.emacs.d
-        single_branch: yes
-        version: develop
+#     - name: "Download Doom Emacs"
+#       ansible.builtin.git:
+#         repo: https://github.com/hlissner/doom-emacs
+#         dest: ~/.emacs.d
+#         single_branch: yes
+#         version: develop
 
-    - name: "Create Doom config dir"
-      ansible.builtin.file:
-        path: ~/.config/doom
-        state: directory
-        mode: '0755'
+#     - name: "Create Doom config dir"
+#       ansible.builtin.file:
+#         path: ~/.config/doom
+#         state: directory
+#         mode: '0755'
 
-   - name: "Create dir for org-mode"
-      ansible.builtin.file:
-        path: ~/.org
-        state: directory
-        mode: '0755'
+#     - name: "Create dir for org-mode"
+#       ansible.builtin.file:
+#         path: ~/.org
+#         state: directory
+#         mode: '0755'
 
-   - name: "Create dir for code"
-      ansible.builtin.file:
-        path: ~/projects
-        state: directory
-        mode: '0755'
+#     - name: "Create dir for code"
+#       ansible.builtin.file:
+#         path: ~/projects
+#         state: directory
+#         mode: '0755'
 
-    - name: "copy doom config"
-      copy:
-        src: ./.doom/*
-        dest: ~/.config/doom/
-        owner: "{{ user }}"
-        mode: '0644'
+#           #    - name: "copy doom config"
+#           #copy:
+#           #src: .doom/*
+#           #dest: ~/.config/doom/
+#           #owner: "{{ user }}"
+#           #mode: '0644'
 
-    - name: "Install Doom"
-      ansible.builtin.shell: ~/.emacs.d/bin/doom install
+#     - name: "Install Doom"
+#       ansible.builtin.shell: ~/.emacs.d/bin/doom install

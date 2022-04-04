@@ -20,3 +20,6 @@ Run Ansible command:
 ```sh
 ansible-playbook setup.yaml -vv 
 ```
+
+For the first run ( e.g. on a new machine ) add
+`--tags never` at the end.

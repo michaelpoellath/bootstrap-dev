@@ -393,17 +393,17 @@ plugins:
 
 # Choose the path to the default shell that zellij will use for opening new panes
 # Default: $SHELL
-#default_shell: fish
+default_shell: zsh
 
 # Toggle between having pane frames around the panes
 # Options:
 #   - true (default)
 #   - false
-#pane_frames: true
+pane_frames: false
 
 # Choose the theme that is specified in the themes section.
 # Default: default
-#theme: default
+theme: alacritty
 
 # Choose the mode that zellij uses when starting up.
 # Default: normal
@@ -416,3 +416,31 @@ plugins:
 #   - true (default)
 #   - false
 #mouse_mode: false
+#
+# themes:
+#   default:
+#     fg: [0,0,0]
+#     bg: [0,0,0]
+#     black: [0,0,0]
+#     gray: [0,0,0]
+#     red: [0,0,0]
+#     green: [0,0,0]
+#     yellow: [0,0,0]
+#     blue: [0,0,0]
+#     magenta: [0,0,0]
+#     cyan: [0,0,0]
+#     white: [0,0,0]
+#     orange: [0,0,0]
+#   alacritty:
+#     fg: 7
+#     bg: 0
+#     black: 0
+#     red: 1
+#     green: 2
+#     yellow: 3
+#     blue: 4
+#     magenta: 5
+#     cyan: 6
+#     white: 7
+#     orange: 16
+#     gray: 18
