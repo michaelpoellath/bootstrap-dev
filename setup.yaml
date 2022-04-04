@@ -38,11 +38,12 @@
           - coreutils
           - fontconfig
           - neovim
+          - azure-cli
+
           - gnu-tar
           - gnupg
           - gpg2
           - pinentry-mac
-          - azure-cli
 
           - kubectl
           - k9s
