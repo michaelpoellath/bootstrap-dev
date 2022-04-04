@@ -23,3 +23,8 @@ ansible-playbook setup.yaml -vv
 
 For the first run ( e.g. on a new machine ) add
 `--tags never` at the end.
+
+## TODO
+
+- add pyenv python setup to setup.yaml
+- add golang install to setup.yaml

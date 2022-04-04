@@ -39,6 +39,7 @@
           - fontconfig
           - neovim
           - gnu-tar
+          - azure-cli
 
           - kubectl
           - k9s
